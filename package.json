@@ -1,0 +1,38 @@
+{
+  "name": "vr-warping-demo-0",
+  "version": "0.0.1",
+  "private": true,
+  "browserify": {
+    "transform": [
+      "glslify"
+    ]
+  },
+  "scripts": {
+    "start": "beefy index.js --open"
+  },
+  "dependencies": {
+    "bunny": "",
+    "canvas-orbit-camera": "",
+    "chance": "",
+    "events": "",
+    "gl-context": "",
+    "gl-fbo": "",
+    "gl-geometry": "",
+    "gl-mat4": "",
+    "gl-vec3": "",
+    "gl-shader": "",
+    "glslify": "",
+    "normals": "",
+    "raf-loop": "",
+    "underscore": "",
+    "webgl-context": ""
+  },
+  "devDependencies": {
+    "beefy": "",
+    "browserify": "",
+    "grunt": "",
+    "grunt-browserify": "",
+    "grunt-contrib-jshint": "",
+    "grunt-contrib-uglify": ""
+  }
+}

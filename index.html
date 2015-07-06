@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="./css/index.css" rel="stylesheet">
+
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <div id="renderer-display" class="hidden">Brute</div>
+    <canvas id="gl-canvas" class="full-screen"></canvas>
+    <div id="overlay" class="full-screen">
+      <div id="message-container">
+        <h1 id="title" >3D warping for VR</h1>
+        </br>
+
+        <p id="chrome-bug" class="hidden">Your browser has a <a target="_blank" href="https://code.google.com/p/chromium/issues/detail?id=411634">bug</a> that prevents this demo from functioning properly. Please access this page with the latest desktop <a target="_blank" href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> browser to see it in action.</p>
+
+        <p id="compatibility" class="hidden">This demo uses experimental technology currently only supported by the latest desktop <a target="_blank" href="https://www.google.com/chrome/browser/desktop/index.html">Chrome</a> and <a target="_blank" href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a> browsers. Please access this page with one of those to see it in action.</p>
+
+        <span id="instructions" class="">
+          <p>Click to start.</p>
+          <p>Use the mouse to look around.</p>
+          <p>Push 1 to use 3D warping for rendering.</p>
+          <p>Push 2 to use the brute force approach (default).</p>
+          <p>Escape to quit.</p>
+        </span>
+
+        <p id="webgl-error" class="hidden">There was an error while creating the WebGL context. Please visit this site for more info: <a target="_blank" href="http://get.webgl.org/troubleshooting/">http://get.webgl.org/troubleshooting/</a></p>
+
+        <p id="webgl-extension" class="hidden">Unfortunately, your device doesn't support a WebGL extension required by this demo. Please access this page from another device with the latest desktop Chrome or Firefox browsers to see it in action.</a></p>
+
+        </br>
+        <p id="github-link"><a href="https://github.com/abiro" target="_blank">Github</a></p>
+    </div>
+
+    <script src="./index.js"></script>
+  </body>
+</html>
