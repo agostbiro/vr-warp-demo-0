@@ -9,6 +9,7 @@
 var _ = require('underscore');
 var bunny = require('bunny');
 var canvasOrbitCamera = require('canvas-orbit-camera');
+var initCompare = require('./lib/compare/compare.js');
 var config = require('./demo-config.js');
 var createFBO = require('gl-fbo');
 var EventEmitter = require('events').EventEmitter;
@@ -43,6 +44,7 @@ module.exports = function initDemo(canvas, meter)
       glslify('./shaders/bunny.vert'),
       glslify('./shaders/bunny.frag')
     ),
+    compareTextures = initCompare(gl),
     copy = initCopy(gl),
     crossGeo = glGeometry(gl),
     crossShader = glShader(
@@ -59,6 +61,7 @@ module.exports = function initDemo(canvas, meter)
     rightEye = vec3.fromValues(config.ipd / 2, 0, 0),
     viewDirNow = vec3.create(),
 
+    compare,
     engine,
     demo,
     renderEye,
@@ -82,25 +85,37 @@ module.exports = function initDemo(canvas, meter)
     meter.tick();
   }
 
-  // Draws warped frames and original frames for one eye next to each other.
-  function compare()
+  compare = (function closure()
   {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    var
+      fboOriginal = createFBO(gl, [config.width, config.height]),
+      fboWarped = createFBO(gl, [config.width, config.height]);
 
-    vec3.copy(viewDirNow, control.looksAt);
+    return function compare()
+    {
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    renderEye(leftEye, viewDirNow, 0, 0, config.width, config.height, true,
-              fbo);
+      vec3.copy(viewDirNow, control.looksAt);
 
-    warp(fbo, config.ipd, config.near, config.far, 
-         config.width, 0, config.width, config.height);
+      renderEye(leftEye, viewDirNow, 0, 0, config.width, config.height, true,
+                fbo);
 
-    renderEye(rightEye, viewDirNow, 0, 0, config.width, config.height);
+      warp(fbo, config.ipd, config.near, config.far, 
+           0, 0, config.width, config.height, fboWarped);
 
-    drawCrosses();
+      renderEye(rightEye, viewDirNow, 0, 0, config.width, config.height, true,
+                fboOriginal);
 
-    meter.tick();
-  }
+      compareTextures(fboOriginal.color[0], fboWarped.color[0], 
+                      config.width, 0, config.width, config.height);
+
+      copy(fboOriginal.color[0], 0, 0, config.width, config.height);
+
+      drawCrosses();
+
+      meter.tick();
+    }
+  })();
 
   function drawCrosses()
   {
@@ -176,7 +191,7 @@ module.exports = function initDemo(canvas, meter)
     else if (name === 'warp')
       engine = loop(warpRender);
     else
-      throw new Error(name + ' is an invalid argument -- setRenderer');
+      throw new Error(name + ' is an invalid argument.');
 
     if (start)
       engine.start();
@@ -256,7 +271,8 @@ module.exports = function initDemo(canvas, meter)
   crossGeo.bind(crossShader);
   crossShader.uniforms.uColor = [0, 0, 0];
 
-  engine = loop(bruteRender);
+  //engine = loop(bruteRender);
+  engine = loop(compare);
 
   demo = Object.create(
     EventEmitter.prototype,
@@ -275,8 +291,11 @@ module.exports = function initDemo(canvas, meter)
   });
 
   // TODO fix glitch on first render.
-  bruteRender();
-  bruteRender();
+  //bruteRender();
+  //bruteRender();
+
+  compare();
+  compare();
 
   return demo;
 };
