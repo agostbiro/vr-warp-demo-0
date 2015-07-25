@@ -1,7 +1,4 @@
-// Copies the contents of a texture to a framebuffer. The texture is assumed
-// to be 'gl-texture2d' and the framebuffer 'gl-fbo'. If the latter isn't
-// specified, the default framebuffer is used.
-
+// Compares two images.
 
 'use strict';
 
@@ -11,17 +8,17 @@ var glslify = require('glslify');
 var glShader = require('gl-shader');
 
 
-module.exports = function initCopy(gl)
+module.exports = function initCompare(gl, threshold)
 {
   var 
     geometry = createVAS(gl, 'aPos', 'aTexCoord'),
     shader = glShader(
       gl,
-      glslify('./copy.vert'),
-      glslify('./copy.frag')
+      glslify('./compare.vert'),
+      glslify('./compare.frag')
     );
 
-  return function copy(texture, x, y, w, h, fbo)
+  return function compare(texA, texB, x, y, w, h, fbo)
   {
     if (fbo)
       fbo.bind();
@@ -32,7 +29,9 @@ module.exports = function initCopy(gl)
 
     geometry.bind(shader);
 
-    shader.uniforms.uTexture = texture.bind();
+    shader.uniforms.uTexA = texA.bind(0);
+    shader.uniforms.uTexB = texB.bind(1);
+    shader.uniforms.uThreshold = threshold;
 
     geometry.draw();
 

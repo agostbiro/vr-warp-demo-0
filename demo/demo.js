@@ -9,13 +9,14 @@
 var _ = require('underscore');
 var bunny = require('bunny');
 var canvasOrbitCamera = require('canvas-orbit-camera');
+var initCompare = require('./lib/compare/compare.js');
 var config = require('./demo-config.js');
 var createFBO = require('gl-fbo');
 var EventEmitter = require('events').EventEmitter;
 var getContext = require('webgl-context');
 var glGeometry = require('gl-geometry');
-var glslify = require('glslify');
 var glShader = require('gl-shader');
+var glslify = require('glslify');
 var initCopy = require('./lib/copy/copy.js');
 var initPointerLockControl = require('./lib/pointer-lock-control.js');
 var initWarp = require('./lib/warp/warp.js');
@@ -26,7 +27,7 @@ var randomModels = require('./random-models.js');
 var vec3 = require('gl-vec3');
 
 
-module.exports = function initDemo(canvas, meter)
+module.exports = function initDemo(canvas)
 {
   var
     gl = getContext({
@@ -43,6 +44,7 @@ module.exports = function initDemo(canvas, meter)
       glslify('./shaders/bunny.vert'),
       glslify('./shaders/bunny.frag')
     ),
+    compareTextures = initCompare(gl, 0.05),
     copy = initCopy(gl),
     crossGeo = glGeometry(gl),
     crossShader = glShader(
@@ -59,6 +61,7 @@ module.exports = function initDemo(canvas, meter)
     rightEye = vec3.fromValues(config.ipd / 2, 0, 0),
     viewDirNow = vec3.create(),
 
+    compare,
     engine,
     demo,
     renderEye,
@@ -79,28 +82,40 @@ module.exports = function initDemo(canvas, meter)
 
     drawCrosses();
 
-    meter.tick();
+    demo.emit('frame');
   }
 
-  // Draws warped frames and original frames for one eye next to each other.
-  function compare()
+  compare = (function closure()
   {
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    var
+      fboOriginal = createFBO(gl, [config.width, config.height]),
+      fboWarped = createFBO(gl, [config.width, config.height]);
 
-    vec3.copy(viewDirNow, control.looksAt);
+    return function compare()
+    {
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    renderEye(leftEye, viewDirNow, 0, 0, config.width, config.height, true,
-              fbo);
+      vec3.copy(viewDirNow, control.looksAt);
 
-    warp(fbo, config.ipd, config.near, config.far, 
-         config.width, 0, config.width, config.height);
+      renderEye(leftEye, viewDirNow, 0, 0, config.width, config.height, true,
+                fbo);
 
-    renderEye(rightEye, viewDirNow, 0, 0, config.width, config.height);
+      warp(fbo, config.ipd, config.near, config.far, 
+           0, 0, config.width, config.height, fboWarped);
 
-    drawCrosses();
+      renderEye(rightEye, viewDirNow, 0, 0, config.width, config.height, true,
+                fboOriginal);
 
-    meter.tick();
-  }
+      compareTextures(fboOriginal.color[0], fboWarped.color[0], 
+                      config.width, 0, config.width, config.height);
+
+      copy(fboOriginal.color[0], 0, 0, config.width, config.height);
+
+      drawCrosses();
+
+      demo.emit('frame');
+    };
+  })();
 
   function drawCrosses()
   {
@@ -120,7 +135,7 @@ module.exports = function initDemo(canvas, meter)
 
   renderEye = (function closure()
   {
-    var 
+    var
       empty = vec3.create(),
       up = vec3.fromValues(0, 1, 0),
       view = mat4.create();
@@ -173,10 +188,12 @@ module.exports = function initDemo(canvas, meter)
 
     if (name === 'brute')
       engine = loop(bruteRender);
+    else if (name === 'compare')
+      engine = loop(compare);
     else if (name === 'warp')
       engine = loop(warpRender);
     else
-      throw new Error(name + ' is an invalid argument -- setRenderer');
+      throw new Error(name + ' is an invalid argument.');
 
     if (start)
       engine.start();
@@ -222,7 +239,7 @@ module.exports = function initDemo(canvas, meter)
 
       //flipEyes = !flipEyes;
 
-      meter.tick();
+      demo.emit('frame');
     };
   })();
 

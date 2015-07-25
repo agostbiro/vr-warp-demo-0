@@ -31,13 +31,18 @@ window.onload = function onload()
 
       if (e.keyCode === 49)
       {
-        demo.setRenderer('warp', true);
-        rendererDisplay.textContent = 'Warp';
+        demo.setRenderer('brute', true);
+        rendererDisplay.textContent = 'Brute';
       }
       else if (e.keyCode === 50)
       {
-        demo.setRenderer('brute', true);
-        rendererDisplay.textContent = 'Brute';
+        demo.setRenderer('warp', true);
+        rendererDisplay.textContent = 'Warp';
+      }
+      else if (e.keyCode === 51)
+      {
+        demo.setRenderer('compare', true);
+        rendererDisplay.textContent = 'Comparison';
       }
 
       block = true;
@@ -90,6 +95,8 @@ window.onload = function onload()
 
     overlay.classList.remove('hidden');
   });
+
+  demo.on('frame', meter.tick.bind(meter));
 
   document.body.addEventListener('keydown', onKey);
 };

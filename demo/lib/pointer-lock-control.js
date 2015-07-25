@@ -22,7 +22,7 @@ var vec3 = require('gl-vec3');
 // camera. The rotation is updated upon each mouse event.
 module.exports = function initPointerLockControl(canvas, speed)
 {
-  var 
+  var
     rotation = vec3.fromValues(0, 0, -1),
 
     control,

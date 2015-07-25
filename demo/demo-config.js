@@ -9,8 +9,8 @@ var config = {
   // unless the warping shader is adjusted.
   length: 10,
 
-  far: 150,
-  nObjects: 2000,
+  far: 30,
+  nObjects: 100,
   seed: 0,
   width: 1080
 };

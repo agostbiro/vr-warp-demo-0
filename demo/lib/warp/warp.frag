@@ -1,10 +1,9 @@
-precision mediump float;
+precision highp float;
 
 
-// Debugging colors
-const vec4 BLACK = vec4(0.0, 0.0, 0.0, 1.0);
-const vec4 GREEN = vec4(0.0, 1.0, 0.0, 1.0);
-const vec4 RED = vec4(1.0, 0.0, 0.0, 1.0);
+// For debugging.
+const vec4 ONES = vec4(1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0, 1.0);
+const vec4 WHITE = vec4(1.0, 1.0, 1.0, 1.0);
 
 // Units are world coordinates.
 uniform float
@@ -26,14 +25,19 @@ float
   offsetInTex,
   reprojX[10],
   searchDir,
-  zValues[10];
+  depth[10];
 
 vec2 texCos[10];
 
 
+vec2 calcTexCo(in float n)
+{
+  return vTexCo + searchDir * vec2(halfPixLen * n, 0.0);
+}
+
 // Convert the z value from the depth buffer to clip coordinates.
 // From: http://stackoverflow.com/a/6657284
-float getZ(in vec2 texCo)
+float getDepth(in vec2 texCo)
 {
   float zB, zN;
 
@@ -41,6 +45,11 @@ float getZ(in vec2 texCo)
   zN = 2.0 * zB - 1.0;
   
   return 2.0 * uNear * uFar / (uFar + uNear - zN * (uFar - uNear));
+}
+
+float reproject(in float n, in float depth)
+{
+  return (vX + searchDir * uPixLen * n) - uOffset / depth;
 }
 
 
@@ -53,80 +62,74 @@ void main(void)
   searchDir = sign(uOffset);
 
   // Calculate the texture coordinates for the pixels along the epipolar line.
-  texCos[0] = vTexCo + searchDir * vec2(halfPixLen, 0.0);
-  texCos[1] = vTexCo + searchDir * vec2(halfPixLen * 2.0, 0.0);
-  texCos[2] = vTexCo + searchDir * vec2(halfPixLen * 3.0, 0.0);
-  texCos[3] = vTexCo + searchDir * vec2(halfPixLen * 4.0, 0.0);
-  texCos[4] = vTexCo + searchDir * vec2(halfPixLen * 5.0, 0.0);
-  texCos[5] = vTexCo + searchDir * vec2(halfPixLen * 6.0, 0.0);
-  texCos[6] = vTexCo + searchDir * vec2(halfPixLen * 7.0, 0.0);
-  texCos[7] = vTexCo + searchDir * vec2(halfPixLen * 8.0, 0.0);
-  texCos[8] = vTexCo + searchDir * vec2(halfPixLen * 9.0, 0.0);
-  texCos[9] = vTexCo + searchDir * vec2(halfPixLen * 10.0, 0.0);
+  texCos[0] = calcTexCo(1.0);
+  texCos[1] = calcTexCo(2.0);
+  texCos[2] = calcTexCo(3.0);
+  texCos[3] = calcTexCo(4.0);
+  texCos[4] = calcTexCo(5.0);
+  texCos[5] = calcTexCo(6.0);
+  texCos[6] = calcTexCo(7.0);
+  texCos[7] = calcTexCo(8.0);
+  texCos[8] = calcTexCo(9.0);
+  texCos[9] = calcTexCo(10.0);
 
   // Get the z values from the depth buffer.
-  zValues[0] = getZ(texCos[0]);
-  zValues[1] = getZ(texCos[1]);
-  zValues[2] = getZ(texCos[2]);
-  zValues[3] = getZ(texCos[3]);
-  zValues[4] = getZ(texCos[4]);
-  zValues[5] = getZ(texCos[5]);
-  zValues[6] = getZ(texCos[6]);
-  zValues[7] = getZ(texCos[7]);
-  zValues[8] = getZ(texCos[8]);
-  zValues[9] = getZ(texCos[9]);
+  depth[0] = getDepth(texCos[0]);
+  depth[1] = getDepth(texCos[1]);
+  depth[2] = getDepth(texCos[2]);
+  depth[3] = getDepth(texCos[3]);
+  depth[4] = getDepth(texCos[4]);
+  depth[5] = getDepth(texCos[5]);
+  depth[6] = getDepth(texCos[6]);
+  depth[7] = getDepth(texCos[7]);
+  depth[8] = getDepth(texCos[8]);
+  depth[9] = getDepth(texCos[9]);
 
-  // Calculate the positions of the reprojections of sample points that lie on
-  // the epipolar line.
-  reprojX[0] = (vX + searchDir * uPixLen) - uOffset / zValues[0];
-  reprojX[1] = (vX + searchDir * uPixLen * 2.0) - uOffset / zValues[1];
-  reprojX[2] = (vX + searchDir * uPixLen * 3.0) - uOffset / zValues[2];
-  reprojX[3] = (vX + searchDir * uPixLen * 4.0) - uOffset / zValues[3];
-  reprojX[4] = (vX + searchDir * uPixLen * 5.0) - uOffset / zValues[4];
-  reprojX[5] = (vX + searchDir * uPixLen * 6.0) - uOffset / zValues[5];
-  reprojX[6] = (vX + searchDir * uPixLen * 7.0) - uOffset / zValues[6];
-  reprojX[7] = (vX + searchDir * uPixLen * 8.0) - uOffset / zValues[7];
-  reprojX[8] = (vX + searchDir * uPixLen * 9.0) - uOffset / zValues[8];
-  reprojX[9] = (vX + searchDir * uPixLen * 10.0) - uOffset / zValues[9];
+  // Reproject the sample points that lie on the epipolar line.
+  reprojX[0] = reproject(1.0, depth[0]);
+  reprojX[1] = reproject(2.0, depth[1]);
+  reprojX[2] = reproject(3.0, depth[2]);
+  reprojX[3] = reproject(4.0, depth[3]);
+  reprojX[4] = reproject(5.0, depth[4]);
+  reprojX[5] = reproject(6.0, depth[5]);
+  reprojX[6] = reproject(7.0, depth[6]);
+  reprojX[7] = reproject(8.0, depth[7]);
+  reprojX[8] = reproject(9.0, depth[8]);
+  reprojX[9] = reproject(10.0, depth[9]);
 
   // If a point sampled farther away is reprojected to the current sample point,
   // then it is guaranteed to have lower depth than all the other sample points
   // closer on the epipolar line.
-  if (abs(vX - reprojX[9]) <= halfPixLen)
+  if (abs(abs(vX) - abs(reprojX[9])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[9]);
 
-  else if (abs(vX - reprojX[8]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[8])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[8]);
 
-  else if (abs(vX - reprojX[7]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[7])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[7]);
 
-  else if (abs(vX - reprojX[6]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[6])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[6]);
 
-  else if (abs(vX - reprojX[5]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[5])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[5]);
 
-  else if (abs(vX - reprojX[4]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[4])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[4]);
 
-  else if (abs(vX - reprojX[3]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[3])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[3]);
 
-  else if (abs(vX - reprojX[2]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[2])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[2]);
 
-  else if (abs(vX - reprojX[1]) <= halfPixLen)
+  else if (abs(abs(vX) - abs(reprojX[1])) <= halfPixLen)
     gl_FragColor = texture2D(uColorBuffer, texCos[1]);
 
-  else if (abs(vX - reprojX[0]) <= halfPixLen)
-    gl_FragColor = texture2D(uColorBuffer, texCos[1]);
+  else if (abs(abs(vX) - abs(reprojX[0])) <= halfPixLen)
+    gl_FragColor = texture2D(uColorBuffer, texCos[0]);
 
   else
     gl_FragColor = texture2D(uColorBuffer, vTexCo);
-
-  /*if (uOffset < 0.0)
-    gl_FragColor = GREEN;
-  else
-    gl_FragColor = RED;*/
 }
