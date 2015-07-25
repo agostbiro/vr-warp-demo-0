@@ -44,7 +44,7 @@ module.exports = function initDemo(canvas)
       glslify('./shaders/bunny.vert'),
       glslify('./shaders/bunny.frag')
     ),
-    compareTextures = initCompare(gl),
+    compareTextures = initCompare(gl, 0.05),
     copy = initCopy(gl),
     crossGeo = glGeometry(gl),
     crossShader = glShader(

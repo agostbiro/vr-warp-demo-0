@@ -8,7 +8,7 @@ var glslify = require('glslify');
 var glShader = require('gl-shader');
 
 
-module.exports = function initCompare(gl)
+module.exports = function initCompare(gl, threshold)
 {
   var 
     geometry = createVAS(gl, 'aPos', 'aTexCoord'),
@@ -31,9 +31,11 @@ module.exports = function initCompare(gl)
 
     shader.uniforms.uTexA = texA.bind(0);
     shader.uniforms.uTexB = texB.bind(1);
+    shader.uniforms.uThreshold = threshold;
 
     geometry.draw();
 
+    geometry.unbind();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   };
 };

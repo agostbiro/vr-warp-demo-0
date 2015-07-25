@@ -1,6 +1,8 @@
 precision highp float;
 
-uniform sampler2D 
+uniform float uThreshold;
+
+uniform sampler2D
   uTexA,
   uTexB;
 
@@ -15,7 +17,7 @@ void main(void)
   texA = texture2D(uTexA, vTexCo);
   texB = texture2D(uTexB, vTexCo);
   
-  if (all(lessThan(abs(texA - texB), vec4(0.001))))
+  if (all(lessThan(abs(texA - texB), vec4(uThreshold))))
     gl_FragColor = texB;
   else
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
