@@ -36,6 +36,7 @@ module.exports = function initCopy(gl)
 
     geometry.draw();
 
+    geometry.unbind();
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   };
 };
