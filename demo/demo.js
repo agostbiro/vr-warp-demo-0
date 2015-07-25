@@ -27,7 +27,7 @@ var randomModels = require('./random-models.js');
 var vec3 = require('gl-vec3');
 
 
-module.exports = function initDemo(canvas, meter)
+module.exports = function initDemo(canvas)
 {
   var
     gl = getContext({
@@ -82,7 +82,7 @@ module.exports = function initDemo(canvas, meter)
 
     drawCrosses();
 
-    meter.tick();
+    demo.emit('frame');
   }
 
   compare = (function closure()
@@ -113,7 +113,7 @@ module.exports = function initDemo(canvas, meter)
 
       drawCrosses();
 
-      meter.tick();
+      demo.emit('frame');
     }
   })();
 
@@ -237,7 +237,7 @@ module.exports = function initDemo(canvas, meter)
 
       //flipEyes = !flipEyes;
 
-      meter.tick();
+      demo.emit('frame');
     };
   })();
 

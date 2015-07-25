@@ -91,5 +91,7 @@ window.onload = function onload()
     overlay.classList.remove('hidden');
   });
 
+  demo.on('frame', meter.tick.bind(meter));
+
   document.body.addEventListener('keydown', onKey);
 };
