@@ -6,7 +6,7 @@
 'use strict';
 
 
-var createVAS = require('../view-aligned-square.js');
+var createVAS = require('./lib/view-aligned-square.js');
 var glslify = require('glslify');
 var glShader = require('gl-shader');
 
@@ -41,5 +41,7 @@ module.exports = function initWarp(gl)
     shader.uniforms.uPixLen = 2 / sourceFbo.shape[0];
 
     geometry.draw();
+
+    geometry.unbind();
   };
 };
