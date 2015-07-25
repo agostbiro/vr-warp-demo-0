@@ -114,7 +114,7 @@ module.exports = function initDemo(canvas)
       drawCrosses();
 
       demo.emit('frame');
-    }
+    };
   })();
 
   function drawCrosses()
@@ -135,7 +135,7 @@ module.exports = function initDemo(canvas)
 
   renderEye = (function closure()
   {
-    var 
+    var
       empty = vec3.create(),
       up = vec3.fromValues(0, 1, 0),
       view = mat4.create();
@@ -188,6 +188,8 @@ module.exports = function initDemo(canvas)
 
     if (name === 'brute')
       engine = loop(bruteRender);
+    else if (name === 'compare')
+      engine = loop(compare);
     else if (name === 'warp')
       engine = loop(warpRender);
     else
@@ -271,8 +273,7 @@ module.exports = function initDemo(canvas)
   crossGeo.bind(crossShader);
   crossShader.uniforms.uColor = [0, 0, 0];
 
-  //engine = loop(bruteRender);
-  engine = loop(compare);
+  engine = loop(bruteRender);
 
   demo = Object.create(
     EventEmitter.prototype,
@@ -291,11 +292,8 @@ module.exports = function initDemo(canvas)
   });
 
   // TODO fix glitch on first render.
-  //bruteRender();
-  //bruteRender();
-
-  compare();
-  compare();
+  bruteRender();
+  bruteRender();
 
   return demo;
 };
